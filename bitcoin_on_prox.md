@@ -4,6 +4,7 @@
 Heavily influenced by https://github.com/raspibolt/raspibolt
 
 ## Preparation
+
 - Find data drive (assuming it's external) `lsblk`
         - Mount drive using UUID found via `blkid /dev/sdc1`
         - `nano /etc/fstab`
@@ -147,3 +148,8 @@ Install `sudo install -m 0755 -o root -g root -t /usr/local/bin lndconnect-linux
 ## Cloning dodgy ssd
 
 dd if=/dev/sde of=/dev/sdc bs=64K conv=noerror,sync status=progress
+
+## Install RTL
+Mix of https://github.com/Ride-The-Lightning/RTL?tab=readme-ov-file#install
+
+With auth and .onion config from https://raspibolt.org/guide/lightning/web-app.html
