@@ -1,0 +1,128 @@
+### Creating a New User, Adding to Sudo, Installing and Configuring `sudo` and `fail2ban`
+
+#### **1. Creating a New User**
+1. Add a new user:
+   ```bash
+   adduser <username>
+   ```
+   - Replace `<username>` with the desired username.
+   - Follow the prompts to set the password and user information.
+
+2. Add the new user to the `sudo` group:
+   ```bash
+   usermod -aG sudo <username>
+   ```
+
+3. Verify the user is in the `sudo` group:
+   ```bash
+   groups <username>
+   ```
+
+#### **2. Installing `sudo` (if not installed)**
+1. Check if `sudo` is installed:
+   ```bash
+   dpkg -l | grep sudo
+   ```
+   - If not installed, proceed to install.
+
+2. Install `sudo`:
+   ```bash
+   apt update
+   apt install sudo
+   ```
+
+3. Test `sudo` with the new user:
+   ```bash
+   su - <username>
+   sudo whoami
+   ```
+   - It should return `root`.
+
+#### **3. Installing `fail2ban`**
+1. Install `fail2ban`:
+   ```bash
+   apt update
+   apt install fail2ban
+   ```
+
+2. Enable and start the `fail2ban` service:
+   ```bash
+   systemctl enable fail2ban
+   systemctl start fail2ban
+   ```
+
+3. Verify the service is running:
+   ```bash
+   systemctl status fail2ban
+   ```
+
+#### **4. Configuring `fail2ban`**
+1. Copy the default configuration to a local file for customisation:
+   ```bash
+   cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+   ```
+
+2. Open the local configuration file:
+   ```bash
+   nano /etc/fail2ban/jail.local
+   ```
+
+3. Modify the following settings in the `[DEFAULT]` section:
+   ```ini
+   bantime = 10m       # Ban duration (default is 10 minutes)
+   findtime = 10m      # Time window for counting failed attempts
+   maxretry = 5        # Maximum failed attempts before banning
+   ```
+
+4. Configure the SSH jail by ensuring the `[sshd]` section is enabled:
+   ```ini
+   [sshd]
+   enabled = true
+   port = ssh
+   logpath = /var/log/auth.log   # Use /var/log/syslog if auth.log is unavailable
+   backend = systemd            # Use systemd for journald-based systems
+   maxretry = 5
+   ```
+
+5. Save and exit the file.
+
+6. Restart `fail2ban` to apply changes:
+   ```bash
+   systemctl restart fail2ban
+   ```
+
+#### **5. Verifying `fail2ban`**
+1. Check `fail2ban` status:
+   ```bash
+   fail2ban-client status
+   ```
+
+2. Verify the SSH jail is active:
+   ```bash
+   fail2ban-client status sshd
+   ```
+
+3. View `fail2ban` logs for activity:
+   ```bash
+   journalctl -u fail2ban
+   ```
+
+#### **6. Debugging and Testing**
+1. Test logging of failed SSH attempts:
+   - Cause a failed login:
+     ```bash
+     ssh invaliduser@<server-ip>
+     ```
+   - Verify the log contains the attempt:
+     ```bash
+     journalctl _COMM=sshd
+     ```
+
+2. Unban an IP if required:
+   ```bash
+   fail2ban-client unban <IP_ADDRESS>
+   ```
+
+---
+
+These steps incorporate your command history and provide a clear workflow for managing users, installing and configuring `sudo`, and securing the system with `fail2ban`.
